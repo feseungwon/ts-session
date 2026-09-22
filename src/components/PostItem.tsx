@@ -6,15 +6,16 @@ import type { Post } from "../types";
 interface PostItemProps {
   post: Post; // 아까 만든 Post 타입을 그대로!
   // 과제 2-2: onSelect: (post: Post) => void를 추가하세요.
+  onSelect: (post: Post) => void;
 }
-function PostItem({ post }: PostItemProps) {
+function PostItem({ post, onSelect }: PostItemProps) {
   return (
     <Card>
       <Title>{post.title}</Title>
       <Content>{post.content}</Content>
       <Author>by {post.author}</Author>
       {/* 과제 2-2: 버튼을 누르면 현재 post를 onSelect로 넘기세요. */}
-      <Button label="선택" />
+      <Button label="선택" onClick={()=> onSelect(post)} />
     </Card>
   );
 }
