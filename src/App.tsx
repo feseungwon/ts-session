@@ -1,8 +1,8 @@
 import { useState } from "react";
 import styled from "styled-components";
-import PostList from "./components/PostList";
+import PostItem from "./components/PostItem";
 import Button from "./components/Button";
-import type { Post, NewPost, PostListState } from "./types";
+import type { Post, NewPost } from "./types";
 
 const DUMMY: Post[] = [
   { id: 1, title: "첫 글", content: "반갑습니다", author: "동건" },
@@ -11,9 +11,10 @@ const DUMMY: Post[] = [
 ];
 
 function App() {
+  const [favorites, setFavorites] = useState<Post[]>([]);
   // 과제 1-1: DUMMY를 초기값으로 하는 게시글 상태를 만드세요. 타입 인자 Post[]를 직접 적습니다.
   const [post, setPost] = useState<Post[]>(DUMMY);
-  
+
   // 과제 2-1: 선택한 게시글 상태를 Post | null 타입, 초기값 null로 만드세요.
 
   const [title, setTitle] = useState("");
@@ -33,32 +34,40 @@ function App() {
     setAuthor(e.target.value);
   };
 
+  function toggleFavorite(post: Post) {
+    setFavorites((favorites) => {
+      const exists = favorites.some((f) => f.id === post.id);
+
+      if (exists) {
+        return favorites.filter((f) => f.id !== post.id);
+      } else {
+        return [...favorites, post];
+      }
+    });
+  }
+
   const handleAddPost = () => {
     // 과제 1-3: trim()한 입력값으로 NewPost 객체를 만들고, 하나라도 비어 있으면 추가하지 않습니다.
-      const newPost: NewPost = {
-        title: title.trim(),
-        content: content.trim(),
-        author: author.trim(),
-      }
+    const newPost: NewPost = {
+      title: title.trim(),
+      content: content.trim(),
+      author: author.trim(),
+    };
 
-      if (!newPost.title || !newPost.content || !newPost.author) {
-         return;
-      }
+    if (!newPost.title || !newPost.content || !newPost.author) {
+      return;
+    }
     // 과제 1-4: NewPost에 id: Date.now()를 더해 기존 배열 뒤에 새 배열로 추가하고 입력창을 비웁니다.
-      setPost((prev) => [...prev, { ...newPost, id: Date.now() }]);
+    setPost((prev) => [...prev, { ...newPost, id: Date.now() }]);
 
-      setTitle("");
-      setContent("");
-      setAuthor("");
+    setTitle("");
+    setContent("");
+    setAuthor("");
   };
-
-  // 과제 3-3: posts.length에 따라 성공 또는 빈 상태 객체를 만드세요. 변수 타입은 PostListState로 적습니다.
-  const postListState: PostListState =
-    post.length > 0 ? { status: "success", data: post } : { status: "empty" };
 
   return (
     <>
-      <Title>🐘 TS 미니 게시판</Title>  
+      <Title>🐘 TS 미니 게시판</Title>
 
       <input
         value={title}
@@ -79,25 +88,42 @@ function App() {
 
       {/* 과제 1-1: DUMMY 대신 게시글 상태로 렌더링하세요. */}
       {/* 과제 2-2: PostItem에 onSelect를 넘기세요. */}
-      {/* 과제 3-3: 아래 목록을 PostList로 바꾸고 목록 상태와 onSelect를 넘기세요. 쓰지 않게 된 import와 List는 지웁니다. */}
-      <PostList state={postListState} onSelect={setSelectedPost} />
+      {post.length === 0 ? (
+        <p>아직 게시글이 없습니다.</p>
+      ) : (
+        <List>
+          {post.map((post) => (
+            <PostItem
+              key={post.id}
+              post={post}
+              onSelect={setSelectedPost}
+              isFavorite={favorites.some((f) => f.id === post.id)}
+              onToggleFavorite={toggleFavorite}
+            />
+          ))}
+        </List>
+      )}
 
       {/* 과제 2-3: 선택 전에는 "게시글을 선택해주세요.", 선택 후에는 번호·제목·내용·작성자를 보여 주세요. */}
-          {selectedPost === null 
-          ? (<p>게시글을 선택해주세요.</p>) 
-          : (
-          <div>
+      {selectedPost === null ? (
+        <p>게시글을 선택해주세요.</p>
+      ) : (
+        <div>
           <p>번호: {selectedPost.id}</p>
           <h2>{selectedPost.title}</h2>
           <p>내용: {selectedPost.content}</p>
           <p>작성자: {selectedPost.author}</p>
-          </div>
-          )}
+        </div>
+      )}
     </>
   );
 }
 
-const Title = styled.h1`  
+const List = styled.div`
+  margin: 0;
+`;
+
+const Title = styled.h1`
   color: #2f6feb;
   font-size: 28px;
 `;
